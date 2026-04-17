@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>GPA Calculator</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --purple-50: #EEEDFE; --purple-100: #CECBF6; --purple-200: #AFA9EC;
+    --purple-400: #7F77DD; --purple-600: #534AB7; --purple-800: #3C3489;
+    --teal-50: #E1F5EE; --teal-400: #1D9E75; --teal-800: #085041;
+    --green-50: #EAF3DE; --green-400: #639922; --green-800: #27500A;
+    --amber-50: #FAEEDA; --amber-400: #BA7517; --amber-800: #633806;
+    --red-50: #FCEBEB; --red-400: #E24B4A; --red-600: #A32D2D; --red-800: #791F1F;
+    --gray-50: #F1EFE8; --gray-100: #D3D1C7; --gray-400: #888780; --gray-600: #5F5E5A;
+  }
+
+  body {
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    background: #ece9ff;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 2.5rem 1rem 4rem;
+  }
+
+  .app { width: 100%; max-width: 740px; display: flex; flex-direction: column; gap: 1.1rem; }
+
+  .header {
+    background: var(--purple-600);
+    border-radius: 20px;
+    padding: 1.75rem 2rem;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+  }
+  .hicon {
+    width: 54px; height: 54px; flex-shrink: 0;
+    background: rgba(255,255,255,0.18);
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px;
+  }
+  .header h1 { font-size: 1.55rem; font-weight: 700; letter-spacing: -0.02em; }
+  .header p  { font-size: 0.88rem; opacity: 0.7; margin-top: 3px; }
+
+  .legend {
+    background: #fff;
+    border-radius: 16px;
+    padding: 0.9rem 1.25rem;
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    border: 1px solid var(--purple-100);
+  }
+  .leg-lbl { font-size: 0.72rem; font-weight: 700; color: var(--gray-600); text-transform: uppercase; letter-spacing: 0.07em; margin-right: 2px; }
+  .pill { font-size: 0.78rem; font-weight: 700; padding: 4px 12px; border-radius: 20px; }
+  .pa { background: var(--green-50);  color: var(--green-800); }
+  .pb { background: var(--teal-50);   color: var(--teal-800); }
+  .pc { background: var(--amber-50);  color: var(--amber-800); }
+  .pd { background: var(--red-50);    color: var(--red-800); }
+  .pf { background: #fce8e8; color: #7a1f1f; }
+
+  .table-card {
+    background: #fff;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid var(--purple-100);
+  }
+  .thead {
+    display: grid;
+    grid-template-columns: 2.2fr 1fr 1.1fr 44px;
+    gap: 12px;
+    padding: 0.85rem 1.25rem;
+    background: var(--purple-50);
+    font-size: 0.72rem; font-weight: 700;
+    color: var(--purple-800);
+    text-transform: uppercase; letter-spacing: 0.07em;
+  }
+
+  #rows { padding: 0.85rem 1.25rem; display: flex; flex-direction: column; gap: 10px; }
+
+  .row {
+    display: grid;
+    grid-template-columns: 2.2fr 1fr 1.1fr 44px;
+    gap: 12px; align-items: center;
+    animation: pop .22s ease;
+  }
+  @keyframes pop { from { opacity:0; transform:translateY(-5px); } to { opacity:1; transform:translateY(0); } }
+
+  .row input, .row select {
+    width: 100%; height: 44px;
+    padding: 0 12px;
+    border: 1.5px solid var(--gray-100);
+    border-radius: 10px;
+    font-size: 0.92rem; color: #1a1a2e;
+    background: #fafafa;
+    outline: none;
+    transition: border-color .18s, background .18s;
+    appearance: none; -webkit-appearance: none;
+  }
+  .row input::placeholder { color: #c4c4c4; }
+  .row input:focus, .row select:focus { border-color: var(--purple-400); background: #fff; }
+
+  .selw { position: relative; }
+  .selw::after {
+    content: '';
+    position: absolute; right: 12px; top: 50%;
+    border: 5px solid transparent;
+    border-top-color: var(--purple-400);
+    transform: translateY(-25%);
+    pointer-events: none;
+  }
+  .selw select { padding-right: 30px; font-weight: 600; cursor: pointer; }
+
+  .bdel {
+    width: 40px; height: 40px; flex-shrink: 0;
+    border: none; border-radius: 10px;
+    background: var(--red-50); color: var(--red-600);
+    font-size: 14px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .15s, transform .12s;
+  }
+  .bdel:hover { background: #f7c1c1; transform: scale(1.08); }
+
+  .divider { height: 1px; background: var(--purple-50); margin: 0 1.25rem; }
+
+  .actions {
+    display: grid;
+    grid-template-columns: 1fr 1.7fr 1fr;
+    gap: 10px;
+    padding: 1rem 1.25rem;
+  }
+  .btn {
+    height: 48px; border-radius: 12px;
+    font-size: 0.9rem; font-weight: 700;
+    cursor: pointer; border: none;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    transition: filter .15s, transform .12s;
+  }
+  .btn:active { transform: scale(0.97); }
+  .badd  { background: var(--purple-50);  color: var(--purple-800); border: 1.5px dashed var(--purple-200); }
+  .badd:hover  { background: var(--purple-100); }
+  .bcalc { background: var(--purple-600); color: #fff; }
+  .bcalc:hover { filter: brightness(1.13); }
+  .breset{ background: var(--gray-50); color: var(--gray-600); border: 1.5px solid var(--gray-100); }
+  .breset:hover { background: var(--gray-100); }
+
+  .err { display: none; text-align: center; font-size: 0.85rem; color: var(--red-600); padding: 0.4rem 1.25rem 0; }
+
+  .result-card {
+    background: #fff;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid var(--purple-100);
+    display: none;
+    animation: pop .32s ease;
+  }
+  .rhero {
+    background: var(--purple-600);
+    padding: 2rem 1.5rem 1.6rem;
+    text-align: center; color: #fff;
+  }
+  .rhl { font-size: 0.75rem; opacity: 0.65; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 4px; }
+  .gpaval { font-size: 5.5rem; font-weight: 800; line-height: 1; letter-spacing: -0.04em; }
+  .rof { font-size: 0.88rem; opacity: 0.55; margin-top: 4px; }
+  .badge {
+    display: inline-block;
+    margin-top: 14px; padding: 5px 18px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.18);
+    font-size: 0.85rem; font-weight: 700;
+  }
+  .ptrack { height: 6px; background: rgba(255,255,255,0.2); }
+  .pfill  { height: 6px; background: rgba(255,255,255,0.8); transition: width .9s cubic-bezier(.4,0,.2,1); }
+
+  .stats {
+    display: grid; grid-template-columns: repeat(3,1fr);
+  }
+  .stat { padding: 1.2rem 1rem; text-align: center; border-right: 1px solid var(--purple-50); }
+  .stat:last-child { border-right: none; }
+  .snum { font-size: 1.65rem; font-weight: 700; color: var(--purple-600); }
+  .slbl { font-size: 0.7rem; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px; }
+
+  .cstrip { height: 5px; display: grid; grid-template-columns: repeat(5,1fr); }
+  .cs1{background:var(--green-400);} .cs2{background:var(--teal-400);}
+  .cs3{background:#EF9F27;} .cs4{background:var(--red-400);} .cs5{background:#B02020;}
+
+  @media (max-width: 520px) {
+    body { padding: 1rem 0.75rem 3rem; }
+    .header { padding: 1.3rem 1.1rem; gap: 0.9rem; }
+    .header h1 { font-size: 1.25rem; }
+    .hicon { width: 44px; height: 44px; font-size: 20px; border-radius: 11px; }
+    .thead { display: none; }
+    .row { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; }
+    .row input:first-child { grid-column: 1 / -1; }
+    .bdel { grid-row: 2; grid-column: 2; justify-self: end; }
+    .actions { grid-template-columns: 1fr 1fr; }
+    .bcalc { grid-column: 1 / -1; order: -1; }
+    .gpaval { font-size: 4.2rem; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <div class="hicon">🎓</div>
+    <div>
+      <h1>GPA Calculator</h1>
+      <p>Add your subjects, grades &amp; credits — get your GPA instantly</p>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span class="leg-lbl">Scale</span>
+    <span class="pill pa">A = 4.0</span>
+    <span class="pill pb">B = 3.0</span>
+    <span class="pill pc">C = 2.0</span>
+    <span class="pill pd">D = 1.0</span>
+    <span class="pill pf">F = 0.0</span>
+  </div>
+
+  <div class="table-card">
+    <div class="thead">
+      <div>Subject name</div><div>Grade</div><div>Credits</div><div></div>
+    </div>
+    <div id="rows"></div>
+    <div class="divider"></div>
+    <div class="actions">
+      <button class="btn badd"  onclick="addRow()">＋ Add</button>
+      <button class="btn bcalc" onclick="calc()">Calculate GPA</button>
+      <button class="btn breset" onclick="doReset()">↺ Reset</button>
+    </div>
+  </div>
+
+  <p class="err" id="err">⚠ Please fill in all fields with valid values.</p>
+
+  <div class="result-card" id="res">
+    <div class="rhero">
+      <div class="rhl">Your GPA</div>
+      <div class="gpaval" id="gpaval">—</div>
+      <div class="rof">out of 4.00</div>
+      <div class="badge" id="badge">—</div>
+    </div>
+    <div class="ptrack"><div class="pfill" id="pfill" style="width:0%"></div></div>
+    <div class="stats">
+      <div class="stat"><div class="snum" id="ss">0</div><div class="slbl">Subjects</div></div>
+      <div class="stat"><div class="snum" id="sc">0</div><div class="slbl">Total credits</div></div>
+      <div class="stat"><div class="snum" id="sp">0.00</div><div class="slbl">Grade points</div></div>
+    </div>
+    <div class="cstrip"><div class="cs1"></div><div class="cs2"></div><div class="cs3"></div><div class="cs4"></div><div class="cs5"></div></div>
+  </div>
+
+</div>
+<script>
+const G = { A:4.0, B:3.0, C:2.0, D:1.0, F:0.0 };
+let n = 0;
+
+function addRow(nm='', gr='A', cr='') {
+  const id = ++n;
+  const c = document.getElementById('rows');
+  const d = document.createElement('div');
+  d.className='row'; d.id='r'+id;
+  d.innerHTML=`
+    <input type="text" placeholder="e.g. Mathematics" value="${nm}"/>
+    <div class="selw"><select>${Object.keys(G).map(g=>`<option value="${g}"${g===gr?' selected':''}>${g}</option>`).join('')}</select></div>
+    <input type="number" placeholder="e.g. 3" min="0.5" max="12" step="0.5" value="${cr}"/>
+    <button class="bdel" onclick="del(${id})">✕</button>`;
+  c.appendChild(d);
+}
+
+function del(id) {
+  const all = document.querySelectorAll('.row');
+  if (all.length <= 1) {
+    const r = document.getElementById('r'+id);
+    r.querySelectorAll('input').forEach(i=>i.value='');
+    r.querySelector('select').value='A';
+  } else {
+    const r = document.getElementById('r'+id);
+    r.style.transition='opacity .18s,transform .18s';
+    r.style.opacity='0'; r.style.transform='translateY(-4px)';
+    setTimeout(()=>r.remove(), 190);
+  }
+  document.getElementById('res').style.display='none';
+}
+
+function standing(g) {
+  if(g>=3.7) return '🏆 Summa Cum Laude';
+  if(g>=3.5) return '⭐ Magna Cum Laude';
+  if(g>=3.0) return '✅ Good Standing';
+  if(g>=2.0) return '📘 Satisfactory';
+  if(g>=1.0) return '⚠ Below Average';
+  return '❌ Failing';
+}
+
+function calc() {
+  const err = document.getElementById('err');
+  const rows = document.querySelectorAll('.row');
+  let pts=0, cr=0, ok=true;
+  rows.forEach(r=>{
+    const ins=r.querySelectorAll('input');
+    const nm=ins[0].value.trim(), gr=r.querySelector('select').value, c=parseFloat(ins[1].value);
+    if(!nm||isNaN(c)||c<=0){ok=false;return;}
+    pts+=G[gr]*c; cr+=c;
+  });
+  if(!ok||cr===0){ err.style.display='block'; document.getElementById('res').style.display='none'; return; }
+  err.style.display='none';
+  const gpa=(pts/cr);
+  document.getElementById('gpaval').textContent=gpa.toFixed(2);
+  document.getElementById('badge').textContent=standing(gpa);
+  document.getElementById('pfill').style.width=((gpa/4)*100).toFixed(1)+'%';
+  document.getElementById('ss').textContent=rows.length;
+  document.getElementById('sc').textContent=cr;
+  document.getElementById('sp').textContent=pts.toFixed(2);
+  const res=document.getElementById('res');
+  res.style.display='block';
+  res.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function doReset() {
+  document.getElementById('rows').innerHTML='';
+  document.getElementById('res').style.display='none';
+  document.getElementById('err').style.display='none';
+  n=0; addRow(); addRow(); addRow();
+}
+
+addRow(); addRow(); addRow();
+</script>
+</body>
+</html>
